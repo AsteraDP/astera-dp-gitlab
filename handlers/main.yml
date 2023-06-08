@@ -1,0 +1,6 @@
+---
+# handlers file for gitlab
+- name: restart gitlab
+  command: gitlab-ctl reconfigure
+  register: astera_gitlab_restart
+  failed_when: astera_gitlab_restart_handler_failed_when | bool

@@ -1,0 +1,67 @@
+---
+
+- import_tasks: certs.yml
+  when: not astera_gitlab_letsencrypt_enable | default('true') | bool
+
+# tasks file for gitlab
+- name: "Include OS-specific variables."
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: "Check if GitLab configuration file already exists."
+  stat:
+    path: "/etc/gitlab/gitlab.rb"
+  register: "astera_gitlab_config_file"
+
+- name: Check if GitLab is already installed.
+  stat:
+    path: "/usr/bin/gitlab-ctl"
+  register: "astera_gitlab_file"
+
+
+- name: "Install IAC gitlab prerequisited"
+  ansible.builtin.apt:
+    name: "{{ astera_gitlab_dependencies }}"
+    state: "present"
+    update_cache: "yes"
+
+- name: "Install GitLab dependencies (Debian)."
+  ansible.builtin.apt:
+    name: "gnupg2"
+    state: "present"
+  when: ansible_os_family == 'Debian'
+
+- name: "Download gitlab installation script"
+  ansible.builtin.get_url:
+    url: "{{ astera_gitlab_repository_installation_script_url }}"
+    dest: "/tmp/gitlab_install_repository.sh"
+    mode: '0775'
+    validate_certs: "{{ astera_gitlab_download_validate_certs }}"
+  when: not astera_gitlab_file.stat.exists
+
+
+- name: "Install GitLab repository."
+  ansible.builtin.command:
+    cmd: "bash /tmp/gitlab_install_repository.sh"
+  register: output
+  when: not astera_gitlab_file.stat.exists
+
+- name: "Install Gitlab"
+  ansible.builtin.apt:
+    name: "{{ astera_gitlab_edition }}"
+    state: "present"
+  when: not astera_gitlab_file.stat.exists
+
+- name: "Reconfigure Gitlab at first run"
+  ansible.builtin.command:
+    cmd: "gitlab-ctl reconfigure"
+    creates: "/var/opt/gitlab/bootstrapped"
+  failed_when: false
+
+- name: "Copy Gitlab config file"
+  ansible.builtin.template:
+    src: "{{ astera_gitlab_config_template }}"
+    dest: "/etc/gitlab/gitlab.rb"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  notify: restart gitlab

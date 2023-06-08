@@ -1,0 +1,29 @@
+---
+
+- name: Create necessary directories
+  file:
+    path: /etc/gitlab/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create private key (RSA, 4096 bits)
+  community.crypto.openssl_privatekey:
+    path: "{{ astera_gitlab_ssl_certificate_key }}"
+
+- name: Create certificate signing request (CSR) for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ astera_gitlab_ssl_certificate_key }}"
+    common_name: "{{ astera_gitlab_domain }}"
+    organization_name: IAC
+    subject_alt_name:
+      - "DNS:{{ astera_gitlab_domain }}"
+  register: csr
+
+- name: Create self-signed certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ astera_gitlab_ssl_certificate }}"
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: "{{ astera_gitlab_ssl_certificate_key }}"
+    provider: selfsigned

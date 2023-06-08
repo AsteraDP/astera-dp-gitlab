@@ -1,0 +1,83 @@
+---
+# defaults file for gitlab
+
+# General config.
+astera_gitlab_domain: upiter.tk
+# iac-gl-dp.duckdns.org
+astera_gitlab_external_url: "https://{{ astera_gitlab_domain }}/"
+astera_gitlab_edition: "gitlab-ce"
+astera_gitlab_config_template: "gitlab.rb.j2"
+astera_gitlab_backup_path: "/var/opt/gitlab/backups"
+astera_gitlab_git_data_dir: "/var/opt/gitlab/git-data"
+
+
+# SSL Configuration.
+astera_gitlab_redirect_http_to_https: true
+astera_gitlab_ssl_path: "/etc/gitlab/ssl"
+astera_gitlab_ssl_certificate: "{{ astera_gitlab_ssl_path }}/{{ astera_gitlab_domain }}.crt"
+astera_gitlab_ssl_certificate_key: "{{ astera_gitlab_ssl_path }}/{{ astera_gitlab_domain }}.key"
+astera_gitlab_ssl_ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
+
+
+# LDAP Settings
+astera_gitlab_ldap_enabled: true
+astera_gitlab_ldap_host: "freeipa.astera-pn.gq"
+astera_gitlab_ldap_port: "389"
+astera_gitlab_ldap_uid: "uid"
+astera_gitlab_ldap_method: "plain"
+astera_gitlab_ldap_bind_dn: "uid=some_user,cn=users,cn=accounts,dc=astera-pn,dc=gq"
+astera_gitlab_ldap_password: "somepassword"
+astera_gitlab_ldap_base: "cn=accounts,dc=astera-pn,dc=gq"
+
+# SMTP Configuration
+astera_gitlab_smtp_enable: false
+astera_gitlab_smtp_address: "smtp.server"
+astera_gitlab_smtp_port: "465"
+astera_gitlab_smtp_user_name: "smtp user"
+astera_gitlab_smtp_password: "smtp password"
+astera_gitlab_smtp_domain: "example.com"
+astera_gitlab_smtp_authentication: "login"
+astera_gitlab_smtp_enable_starttls_auto: true
+astera_gitlab_smtp_tls: false
+astera_gitlab_smtp_openssl_verify_mode: "none"
+astera_gitlab_smtp_ca_path: "/etc/ssl/certs"
+astera_gitlab_smtp_ca_file: "/etc/ssl/certs/ca-certificates.crt"
+
+
+# Probably best to leave this as the default, unless doing testing.
+astera_gitlab_restart_handler_failed_when: 'gitlab_restart.rc != 0'
+
+
+# Dependencies.
+astera_gitlab_dependencies:
+  - openssh-server
+  - postfix
+  - curl
+  - openssl
+  - tzdata
+
+# Optional settings.
+astera_gitlab_time_zone: "Europe/Moscow"
+astera_gitlab_backup_keep_time: "604800"
+astera_gitlab_download_validate_certs: true
+
+# Email configuration
+astera_gitlab_email_enabled: true
+astera_gitlab_email_from: "gitlab@{{ astera_gitlab_domain }}"
+astera_gitlab_email_display_name: "Gitlab"
+astera_gitlab_email_reply_to: "gitlab@{{ astera_gitlab_domain }}"
+
+# Registry configuration.
+astera_gitlab_registry_enable: false
+astera_gitlab_registry_external_url: "https://registry.upiter.tk:4567"
+astera_gitlab_registry_nginx_ssl_certificate: "{{ astera_gitlab_ssl_path }}/{{ astera_gitlab_domain }}.crt"
+astera_gitlab_registry_nginx_ssl_certificate_key: "{{ astera_gitlab_ssl_path }}/{{ astera_gitlab_domain }}.key"
+
+
+# Let's Encrypt integration
+astera_gitlab_letsencrypt_enable: true
+astera_gitlab_letsencrypt_contact_emails: ["a.makarenkov@iac.spb.ru"]
+astera_gitlab_letsencrypt_auto_renew: true
+astera_gitlab_letsencrypt_auto_renew_hour: 12
+astera_gitlab_letsencrypt_auto_renew_minute: 30
+astera_gitlab_letsencrypt_auto_renew_day_of_month: "*/7"
